@@ -4,7 +4,8 @@ from FireModel import FireModel
 def run_main():
     model = FireModel()
     model.generateRandVecField()
-    print(model.v)
+    model.computeSim(5)
+    
 
 
 if __name__ == "__main__":

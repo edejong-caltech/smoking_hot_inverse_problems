@@ -1,6 +1,6 @@
 import numpy as np
-
-
+from fenics import *
+from mshr import *
 class FireModel():
 
     def __init__(self, c=1, D=1, S=[], v=[]):
@@ -56,9 +56,57 @@ class FireModel():
         '''Generates simulation from current saved parameters. 
         
         t: float, length of time for which simulation should run.'''
-        pass
 
-    
+        
+        D = self.D
+        c = self.c
+        divisions = [10,10]
+        W = 100
+        degree = 2
+        mesh = RectangleMesh(-W/2, -D, W/2, 0, divisions[0], divisions[1])
+        V = FunctionSpace(mesh, 'Lagrange', degree)
+        alpha = 3; beta = 1.2
+        u0 = Expression('1 + x[0]*x[0] + alpha*x[1]*x[1] + beta*t',
+                alpha=alpha, beta=beta, t=0)
+
+        alpha = 3; beta = 1.2
+        u0 = Expression('1 + x[0]*x[0] + alpha*x[1]*x[1] + beta*t',
+                        {'alpha': alpha, 'beta': beta})
+        u0.t = 0
+        
+        def boundary(x, on_boundary):  # define the Dirichlet boundary
+            return on_boundary
+        bc = DirichletBC(V, u0, boundary)
+        u_1 = interpolate(u0, V)
+        # or
+        u_1 = project(u0, V)
+        dt = 0.3      # time step
+
+        u = TrialFunction(V)
+        v = TestFunction(V)
+        f = Constant(beta - 2 - 2*alpha)
+
+        a = u*v*dx + dt*inner(nabla_grad(u), nabla_grad(v))*dx
+        L = (u_1 + dt*f)*v*dx
+
+        A = assemble(a)   # assemble only once, before the time stepping
+
+        u = Function(V)   # the unknown at a new time level
+        T = 2             # total simulation time
+        t = dt
+
+        while t <= T:
+            b = assemble(L)
+            u0.t = t
+            bc.apply(A, b)
+            solve(A, u.vector(), b)
+
+            t += dt
+            u_1.assign(u)
+        u_e = interpolate(u0, V)
+        maxdiff = np.abs(u_e.vector().array()-u.vector().array()).max()
+        print('Max error, t=%.2f: %-10.3f' % (t, maxdiff))
+
     def parse_data(self):
         '''Centers, rescales data. Called in uploadData function.'''
         pass
