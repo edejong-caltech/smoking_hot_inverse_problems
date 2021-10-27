@@ -1,6 +1,7 @@
 import numpy as np
 from fenics import *
 from mshr import *
+from dolfin import *
 class FireModel():
 
     def __init__(self, c=1, D=1, S=[], v=[]):
@@ -63,7 +64,7 @@ class FireModel():
         divisions = [10,10]
         W = 100
         degree = 2
-        mesh = RectangleMesh(-W/2, -D, W/2, 0, divisions[0], divisions[1])
+        mesh = Rectangle(-W/2, -D, W/2, 0, divisions[0], divisions[1])
         V = FunctionSpace(mesh, 'Lagrange', degree)
         alpha = 3; beta = 1.2
         u0 = Expression('1 + x[0]*x[0] + alpha*x[1]*x[1] + beta*t',
