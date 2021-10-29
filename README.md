@@ -1,7 +1,9 @@
 # smoking_hot_inverse_problems
 First set up a python environment from environment.yml:
 
+'''python
 conda env create -f environment.yml
+'''
 
 To install required package Porepy:
 
