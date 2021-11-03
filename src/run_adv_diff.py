@@ -1,6 +1,4 @@
 import numpy as np
-from numpy.lib.function_base import diff
-from numpy.lib.utils import source
 import scipy.sparse as sps
 import porepy as pp
 from PIL import Image
@@ -8,7 +6,7 @@ import glob
 import os
 import shutil
 from porepy.fracs.meshing import grid_list_to_grid_bucket
-
+import warnings
 
 def main_test():
     n = 20
@@ -22,13 +20,17 @@ def main_test():
     # modify if velocity field/diff_coeff are different than default
     velocity_field = -np.ones(num_faces)
     diff_coeff = np.ones(num_cells)
-    run_toy_model(n, S, S_loc, sense_t, sense_loc, create_gif=True)
+    run_toy_model(n, S, S_loc, sense_t, sense_loc, create_gif=False)
     print("success")
 
 def run_toy_model(n, source_strength, source_locations, sensor_times, 
                   sensor_locations, velocity_field=None, diff_coeff=None,
                   create_gif=False, save_every=1, gif_name="adv_diff.gif"):
     '''
+    OUTPUT: prints vectors of the local concentration at each of sensor_locations,
+    and for every t in sensor_times
+
+    INPUTS:
     n: number of grid points (n x n grid)
     source_strength: scalar array for emission sources
     source_locations: 2D vector array for emission locations, scaled for 1x1 domain
@@ -36,8 +38,11 @@ def run_toy_model(n, source_strength, source_locations, sensor_times,
     sensor_locations: 2D vector array for reporting outputs (locations)
     velocity_field (optional): should be as np.array(g.num_faces = 2*n^2 + 2*n)
     diff_coeff (optional): np.array(g.num_faces = 2*n^2 + 2*n)
-    
+    create_gif (optional): generate .png and export simulation as a gif
+    save_every: frequency of images for optional gif
+    gif_name: location/filename of optional gif
     '''
+
     t_max = sensor_times[-1]
     if create_gif:
         if not os.path.exists('tmp'): 
@@ -115,7 +120,9 @@ def run_toy_model(n, source_strength, source_locations, sensor_times,
     rhs_source_adv = b[source_term] + time_step * (
         b[advection_term] + b[diffusion_term]
     )
-    IEsolver = sps.linalg.factorized(lhs)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        IEsolver = sps.linalg.factorized(lhs)
 
     # Initial condition
     tracer = np.zeros(rhs_source_adv.size)
@@ -193,4 +200,4 @@ def add_transport_data(n, g, d, parameter_keyword, velocity_field, diff_coeff,
         }
     pp.initialize_default_data(g, d, parameter_keyword, specified_parameters)
 
-main_test()
+#main_test()

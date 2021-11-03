@@ -1,5 +1,17 @@
 # smoking_hot_inverse_problems
-First set up a python environment from environment.yml:
+The forward model takes a list of source strengths and locations for smoke
+emissions, and prints out the local concentration at a specified list of
+sensor times and locations. The forward model is contained in ```run_adv_diff.py```.
+
+A sample notebook is included which sets up the parameters and calls the forward
+model: ```run_forward_model.ipynb```.
+
+For more detailed information on the porepy model and for development testing,
+the notebook ```ex_adv_diff.ipynb``` should be helpful.
+
+
+
+We have provided an environment.yml:
 ```
 conda env create -f environment.yml
 ```
