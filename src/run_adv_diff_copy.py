@@ -9,6 +9,8 @@ import os
 import shutil
 from porepy.fracs.meshing import grid_list_to_grid_bucket
 import warnings
+from IPython import embed
+from datetime import datetime
 
 def main_test():
     n = 20
@@ -137,6 +139,10 @@ def run_toy_model(n, source_strength, source_locations, sensor_times,
     # set up and run
     n_steps = int(np.round(t_max / time_step))
     i_sensor_times = 0
+    # now = datetime.now()
+    # current_time = now.strftime("%H_%M_%S")
+    ij = str(int(source_locations[0,0]*n)) + '_' + str(int(source_locations[0,1]*n))
+    filename = "data/sample_data" + ij + ".csv"
     for i in range(n_steps):
         # export time step
         if i > 0 and i_sensor_times < len(sensor_times):
@@ -147,22 +153,28 @@ def run_toy_model(n, source_strength, source_locations, sensor_times,
                     variable_names=[grid_variable],
                 )
                 local_state = d[pp.STATE][grid_variable]
-                print(local_state[sensor_x])
+                with open(filename, 'a') as file:
+                    file.write("".join([str(a)+',' for a in local_state]))
+                    file.write('\n')
+                # embed()
+                # print(type(local_state))
+                # print(local_state)
+                # print(local_state[sensor_x])
                 #exporter.write_vtu(export_fields, time_step=int(i // save_every))
                 #pp.save_img("tracer_vis/tracer_" + str(int(i // save_every)) + ".png", gb, grid_variable, figsize=(15,12))
         if create_gif:
-            pp.save_img("tmp/tracer_" + str(int(i // save_every)) + ".png", gb, grid_variable, figsize=(15,12))
+           pp.save_img("tmp/tracer_" + str(int(i // save_every)) + ".png", gb, grid_variable, figsize=(15,12))
         tracer = IEsolver(A[mass_term] * tracer + rhs_source_adv)
 
     if create_gif:
-        frames = []
-        imgs = glob.glob("tmp/*.png")
-        for i in imgs:
-            new_frame = Image.open(i)
-            frames.append(new_frame)
+       frames = []
+       imgs = glob.glob("tmp/*.png")
+       for i in imgs:
+           new_frame = Image.open(i)
+           frames.append(new_frame)
 
-        frames[0].save(gif_name, format='GIF',append_images=frames[1:],save_all=True,duration=300,loop=0)
-        shutil.rmtree('tmp')
+       frames[0].save(gif_name, format='GIF',append_images=frames[1:],save_all=True,duration=300,loop=0)
+       shutil.rmtree('tmp')
 
 
 def add_transport_data(n, g, d, parameter_keyword, velocity_field, diff_coeff, 
