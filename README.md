@@ -18,7 +18,7 @@ conda env create -f environment.yml
 
 To install required package Porepy:
 ```
-git clone git@github.com:pmgbergen/porepy.git
+git clone https://github.com/pmgbergen/porepy.git
 cd porepy
 /<location of your conda env>/bin/pip install -e .
 ```
