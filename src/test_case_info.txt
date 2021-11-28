@@ -1,0 +1,38 @@
+Camp Fire start date: Nov 7, 2018
+-----------------------------------
+Average wind speed info:
+
+See climatological maps for November 2018 (10m_(u,v)wnd_201811.gif)
+-1.5 m/s zonal, -0.5 m/s meridional approx
+
+For Paradise, CA, historical wind data (hourly is available):
+https://www.wunderground.com/history/daily/KRDD/date/2018-11-7
+On Nov 7, 2018: WS and gusts 10-20 mph (4.5-9 m/s), NNE
+                        ~ -4 m/s horizontal, -6 m/s meridional
+-----------------------------------
+Diffusion coefficient magnitude:
+https://agupubs.onlinelibrary.wiley.com/doi/full/10.1029/2009JD011765
+10^5 cm2/sec (=10 m2/s) as a ballpark
+
+-----------------------------------
+NONDIMENSIONALIZING:
+
+Length scale: domain size = 550 km x 550 km (5 deg x 5 deg)
+Time scale: 1 hour = 3600 sec 
+
+Velocity field:
+(1 m/s) / (5.5e5 m) * (3600 sec) = 0.00655 = 6.55e-3
+
+Diffusion coefficient:
+(10 m^2 / sec) / (5.5e5m)^2 * 3600 sec = 1.19e-8
+
+-----------------------------------
+(coord x index, coord y index, time index, data)
+1. loop through the 2nd box and set the correct measurement_array to true
+(order in which the table is sorted should be consistent)
+2. Precomputed measurements
+Inside the function compute posterior, noise is added to the data
+Pau can 
+
+Interesting ideas:
+1. Set fully uniform prior versus excluding over water
