@@ -78,12 +78,14 @@ def run_model(config,
     # Set up and run
     time_step = config["time_step"]
     n_steps = int(np.round(config["tmax"] / time_step))
-    output_state = np.zeros((n_steps, g.num_cells))
 
     source_locations = config["source_locations"]
     Nx, Ny = config["Nx"], config["Ny"]
-    # ij = f"{int(source_locations[0,0]*Nx)}_{int(source_locations[0,1]*Ny)}"
-    ij = f"{g.closest_cell(np.atleast_2d(source_locations[0,:]).T)[0]}"  # cell center indexing
+    widthx, widthy = config["widthx"], config["widthy"]
+    cell_widthx = widthx / Nx
+    cell_widthy = widthy / Ny
+    ij = f"{int(source_locations[0,0]/cell_widthx)}_{int(source_locations[0,1]/cell_widthy)}"
+    # ij = f"{g.closest_cell(np.atleast_2d(source_locations[0,:]).T)[0]}"  # cell center indexing
     outpath = Path.cwd() / "data"
     outpath.mkdir(parents=True, exist_ok=True)
     output_filename = outpath / f"sample_data_{ij}.npy"
@@ -94,20 +96,24 @@ def run_model(config,
         tempdir = Path(TemporaryDirectory().name)
         tempdir.mkdir(parents=True, exist_ok=True)
 
+    output_state = np.zeros((len(sensor_times), g.num_cells))
     tracer = np.zeros(g.num_cells)
+    j = 0
     for i in range(n_steps):
         # export time step
         if np.any(np.isclose(save_at, i)):
             assembler.distribute_variable(tracer, variable_names=[grid_variable])
-            output_state[i, :] = np.copy(d[pp.STATE][grid_variable])
+            output_state[j, :] = np.copy(d[pp.STATE][grid_variable])
+            j += 1
             # pp.save_img(f"tracer_vis/tracer_{i}.png", gb, grid_variable, figsize=(15,12))
             if create_gif:
-                pp.save_img(str(tempdir / f"tracer_{i}.png"), gb, grid_variable, figsize=(15,12))
+                pp.save_img(str(tempdir / f"tracer_{j}.png"), gb, grid_variable, figsize=(15,12))
                 plt.close()
         
         # Solve problem at current time step
         tracer = IEsolver(mass_disc * tracer + rhs_source_adv)
 
+    output_state = output_state[:j, :]
     # If True, coarsegrain data to given resolution
     if coarsegrain_output:
         output_state = coarsegrain_data(coarse_grid, g, output_state)
