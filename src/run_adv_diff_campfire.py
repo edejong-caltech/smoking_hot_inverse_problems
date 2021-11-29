@@ -200,4 +200,4 @@ def add_transport_data(n, g, d, parameter_keyword, velocity_field, diff_coeff,
         }
     pp.initialize_default_data(g, d, parameter_keyword, specified_parameters)
 
-main_test()
+#main_test()
