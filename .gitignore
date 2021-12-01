@@ -1,0 +1,5 @@
+*.npy
+*.gif
+*.pyc
+*.log
+settings.json
