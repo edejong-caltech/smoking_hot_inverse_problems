@@ -1,4 +1,5 @@
 import numpy as np
+from numpy.lib.npyio import save
 import scipy.sparse as sps
 import sys
 sys.path.append("..")
@@ -135,14 +136,13 @@ def run_toy_model(n, source_strength, source_locations, sensor_times,
     )
 
     # find sensor location indices
-    sensor_x = (np.round(sensor_locations[:,0]*n)*n + np.round(sensor_locations[:,1]*n)).astype(int)
+    #sensor_x = (np.round(sensor_locations[:,0]*n)*n + np.round(sensor_locations[:,1]*n)).astype(int)
     # set up and run
     n_steps = int(np.round(t_max / time_step))
     i_sensor_times = 0
-    # now = datetime.now()
-    # current_time = now.strftime("%H_%M_%S")
     ij = str(int(source_locations[0,0]*n)) + '_' + str(int(source_locations[0,1]*n))
-    filename = "data/sample_data" + ij + ".csv"
+    filename = "data/sensor_data" + ij + ".npy"
+    save_array = np.zeros((len(sensor_times),n**2))
     for i in range(n_steps):
         # export time step
         if i > 0 and i_sensor_times < len(sensor_times):
@@ -153,9 +153,10 @@ def run_toy_model(n, source_strength, source_locations, sensor_times,
                     variable_names=[grid_variable],
                 )
                 local_state = d[pp.STATE][grid_variable]
-                with open(filename, 'a') as file:
-                    file.write("".join([str(a)+',' for a in local_state]))
-                    file.write('\n')
+                save_array[i-1,:] = local_state
+                # with open(filename, 'a') as file:
+                #     file.write("".join([str(a)+',' for a in local_state]))
+                #     file.write('\n')
                 # embed()
                 # print(type(local_state))
                 # print(local_state)
@@ -165,7 +166,9 @@ def run_toy_model(n, source_strength, source_locations, sensor_times,
         if create_gif:
            pp.save_img("tmp/tracer_" + str(int(i // save_every)) + ".png", gb, grid_variable, figsize=(15,12))
         tracer = IEsolver(A[mass_term] * tracer + rhs_source_adv)
-
+    np.save(filename,save_array)
+    
+    
     if create_gif:
        frames = []
        imgs = glob.glob("tmp/*.png")
